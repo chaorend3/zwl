@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>概算-快速测价模版</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2c7873;
+            --primary-light: #52de97;
+            --primary-dark: #1a5653;
+            --secondary-color: #f0f7f4;
+            --accent-color: #ffb347;
+            --text-color: #333;
+            --light-gray: #e0e0e0;
+            --border-color: #ccc;
+            --success-color: #4caf50;
+            --error-color: #f44336;
+            --header-bg: #2c7873;
+            --section-header: #a8e6cf;
+            --total-row: #def4ed;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background-color: #f5f9f8;
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 28px;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--header-bg);
+            color: white;
+            border-radius: 10px 10px 0 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 0;
+            background-color: white;
+            table-layout: fixed; /* 固定表格布局 */
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 12px 8px;
+            text-align: center;
+            transition: background-color 0.3s;
+            word-wrap: break-word; /* 允许长单词换行 */
+        }
+
+        th {
+            background-color: var(--header-bg);
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:hover td {
+            background-color: #f9f9f9;
+        }
+
+        .section-header {
+            background-color: var(--section-header);
+            font-weight: bold;
+            color: var(--primary-dark);
+        }
+
+        .total-row {
+            background-color: var(--total-row);
+            font-weight: bold;
+            color: var(--primary-dark);
+        }
+
+        .customer-info {
+            background-color: #f5f9f8;
+            font-weight: 600;
+            width: 100px; /* 客户信息列宽度 */
+            min-width: 100px;
+        }
+
+        .location-info {
+            background-color: #f5f9f8;
+            font-weight: 600;
+            width: 150px; /* 地域信息列宽度 */
+            min-width: 150px;
+            padding-left: 12px; /* 增加左内边距，防止文字被边框压住 */
+            text-align: left; /* 文字左对齐 */
+        }
+
+        .north-region {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .manual-selection {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        .product-series {
+            text-align: left;
+            padding-left: 15px;
+        }
+
+        input[type="text"], 
+        input[type="number"], 
+        input[type="password"], 
+        select {
+            width: 90%;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border 0.3s, box-shadow 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(44, 120, 115, 0.2);
+        }
+
+        input[readonly] {
+            background-color: #f9f9f9;
+            color: #666;
+        }
+
+        .area-input-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .area-input {
+            width: 70%;
+            margin-right: 5px;
+        }
+
+        .notes {
+            margin-top: 0;
+            padding: 20px;
+            background-color: #f5f9f8;
+            border-top: 1px solid var(--border-color);
+            border-radius: 0 0 10px 10px;
+        }
+
+        .notes p {
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        .notes p:first-child {
+            font-weight: bold;
+            color: var(--primary-dark);
+            margin-bottom: 10px;
+        }
+
+        /* 设置表格列宽 */
+        .col-system-type { width: 10%; } /* 增加第1列宽度 */
+        .col-professional-type { width: 9%; }
+        .col-product-series { width: 21%; } /* 略微减少产品系列列宽度 */
+        .col-unit { width: 5%; }
+        .col-quantity { width: 8%; }
+        .col-price { width: 9%; } /* 略微减少价格列宽度 */
+        .col-total { width: 9%; } /* 略微减少总价列宽度 */
+        .col-remarks { width: 9%; }
+
+        /* 确保右侧输入字段对齐 */
+        .right-aligned-inputs {
+            width: 100%;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+        }
+
+        .right-aligned-inputs select,
+        .right-aligned-inputs input {
+            width: 100%;
+            margin-left: 0;
+        }
+
+        /* 登录页面样式 */
+        #login-page {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5f9f8 0%, #d4e9e7 100%);
+            padding: 20px;
+        }
+
+        .login-container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .login-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .login-logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-logo i {
+            font-size: 48px;
+            color: var(--primary-color);
+        }
+
+        .login-title {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--primary-color);
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px 12px 40px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        .form-group i {
+            position: absolute;
+            left: 15px;
+            top: 40px;
+            color: #999;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+
+        .login-btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .error-message {
+            color: var(--error-color);
+            text-align: center;
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: rgba(244, 67, 54, 0.1);
+            display: none;
+        }
+
+        /* 主内容页面 */
+        #main-content {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* 抖动动画 */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        .shake {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 5px;
+            }
+
+            h1 {
+                font-size: 22px;
+                padding: 15px;
+            }
+
+            th, td {
+                padding: 8px 5px;
+                font-size: 14px;
+            }
+
+            input[type="text"], 
+            input[type="number"], 
+            input[type="password"], 
+            select {
+                width: 100%;
+                padding: 6px 8px;
+            }
+
+            .login-container {
+                padding: 25px;
+            }
+        }
+
+        /* 页眉和页脚 */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: var(--header-bg);
+            color: white;
+        }
+
+        .header-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .header-btn {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .header-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .header-btn i {
+            font-size: 14px;
+        }
+
+        /* 打印样式 - 更美观的竖向单页显示 */
+        @media print {
+            @page {
+                size: A4 portrait; /* 竖向打印 */
+                margin: 0.5cm; /* 适当的页面边距 */
+            }
+            
+            body {
+                background-color: white;
+                margin: 0;
+                padding: 0;
+                font-size: 6px; /* 全局字体大小 */
+                line-height: 1.1; /* 稍微增加行高 */
+            }
+            
+            .container {
+                margin: 1cm auto; /* 上下增加边距，使内容居中 */
+                padding: 0;
+                max-width: 100%;
+                box-shadow: none;
+                border-radius: 0;
+                transform: scale(0.95); /* 整体缩小 */
+                transform-origin: top center;
+            }
+            
+            h1 {
+                font-size: 16px; /* 放大标题 */
+                padding: 8px; /* 增加内边距 */
+                margin-bottom: 8px; /* 增加与表格的间距 */
+                border-radius: 0;
+                background-color: var(--header-bg);
+                color: white;
+                font-weight: bold;
+                letter-spacing: 1px; /* 增加字间距 */
+            }
+            
+            .header, .header-actions, #login-page {
+                display: none !important; /* 打印时隐藏页眉和登录页面 */
+            }
+            
+            #main-content {
+                display: block !important; /* 确保主内容在打印时显示 */
+            }
+            
+            table {
+                font-size: 6px; /* 表格字体 */
+                line-height: 1.2; /* 行高 */
+                border-collapse: collapse;
+                margin: 0;
+                padding: 0;
+                border: 1px solid #000; /* 加粗表格外边框 */
+            }
+            
+            th, td {
+                padding: 2px; /* 单元格内边距 */
+                border: 0.5px solid #777; /* 更清晰的边框 */
+                height: auto;
+                vertical-align: middle;
+            }
+            
+            th {
+                background-color: #eee !important; /* 表头背景色 */
+                color: #000 !important; /* 表头文字颜色 */
+                font-weight: bold;
+            }
+            
+            input, select {
+                border: none;
+                background: transparent;
+                font-size: 6px;
+                padding: 0;
+                margin: 0;
+                height: auto;
+            }
+            
+            .notes {
+                padding: 4px;
+                font-size: 6px;
+                line-height: 1.2;
+                margin-top: 6px;
+                background-color: white; /* 移除背景色 */
+                border-top: 0.5px solid #ccc;
+            }
+            
+            .notes p {
+                margin-bottom: 2px;
+            }
+            
+            /* 确保表格在一页内显示 */
+            table, tr, td, th, tbody, thead, tfoot {
+                page-break-inside: avoid;
+            }
+            
+            /* 隐藏输入框边框和背景 */
+            input[type="text"], 
+            input[type="number"], 
+            input[type="password"], 
+            select {
+                border: none;
+                background: transparent;
+                -webkit-appearance: none;
+                appearance: none;
+            }
+            
+            /* 产品系列文字 */
+            .product-series {
+                padding-left: 2px;
+                font-size: 5px;
+                text-align: left;
+            }
+            
+            /* 调整列宽以适应打印 */
+            .col-system-type { width: 8%; } /* 打印时第1列宽度 */
+            .col-professional-type { width: 7%; }
+            .col-product-series { width: 17%; }
+            .col-unit { width: 3%; }
+            .col-quantity { width: 6%; }
+            .col-price { width: 8%; }
+            .col-total { width: 8%; }
+            .col-remarks { width: 7%; }
+            
+            /* 美化表头 */
+            th {
+                height: auto;
+                font-size: 6px;
+                font-weight: bold;
+                padding: 2px;
+            }
+            
+            /* 美化行高 */
+            tr {
+                height: auto;
+            }
+            
+            /* 美化标题和小计行 */
+            .section-header {
+                background-color: #e8f5e9 !important; /* 浅绿色背景 */
+                font-weight: bold;
+                font-size: 6px;
+                color: #000 !important;
+            }
+            
+            .total-row {
+                background-color: #e3f2fd !important; /* 浅蓝色背景 */
+                font-weight: bold;
+                font-size: 6px;
+                color: #000 !important;
+            }
+            
+            /* 确保所有内容在一页内显示 */
+            html, body, #main-content, .container, form, table {
+                height: auto;
+                overflow: visible;
+            }
+            
+            /* 强制所有内容在一页内 */
+            .container {
+                position: relative;
+                page-break-after: avoid;
+                page-break-before: avoid;
+            }
+            
+            /* 确保备注在同一页 */
+            .notes {
+                page-break-before: avoid;
+            }
+            
+            /* 客户信息和地域信息 */
+            .customer-info, .location-info {
+                background-color: #f5f5f5 !important;
+                font-weight: bold;
+                color: #000 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 登录页面 -->
+    <div id="login-page">
+        <div class="login-container">
+            <div class="login-logo">
+                <i class="fas fa-calculator"></i>
+            </div>
+            <h2 class="login-title">价格估算系统</h2>
+            <div class="form-group">
+                <label for="username">账号</label>
+                <i class="fas fa-user"></i>
+                <input type="text" id="username" placeholder="请输入账号">
+            </div>
+            <div class="form-group">
+                <label for="password">密码</label>
+                <i class="fas fa-lock"></i>
+                <input type="password" id="password" placeholder="请输入密码">
+            </div>
+            <button type="button" class="login-btn" onclick="login()">
+                <i class="fas fa-sign-in-alt"></i> 登录
+            </button>
+            <div id="error-message" class="error-message">
+                <i class="fas fa-exclamation-circle"></i> 账号或密码错误，请重试
+            </div>
+        </div>
+    </div>
+
+    <!-- 主内容页面 -->
+    <div id="main-content">
+        <div class="header">
+            <div class="header-title">价格估算系统</div>
+            <div class="header-actions">
+                <button class="header-btn" onclick="printForm()">
+                    <i class="fas fa-print"></i> 打印
+                </button>
+                <button class="header-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> 退出
+                </button>
+            </div>
+        </div>
+        
+        <div class="container">
+            <h1>概算-快速测价模版</h1>
+            <form id="estimationForm">
+                <table>
+                    <colgroup>
+                        <col class="col-system-type">
+                        <col class="col-professional-type">
+                        <col class="col-product-series">
+                        <col class="col-unit">
+                        <col class="col-quantity">
+                        <col class="col-price">
+                        <col class="col-total">
+                        <col class="col-remarks">
+                    </colgroup>
+                    <!-- 修改后的客户信息和地域信息布局 -->
+                    <tr>
+                        <td class="customer-info">客户信息</td>
+                        <td colspan="2"><input type="text" name="customer" placeholder="请输入客户信息"></td>
+                        <td class="location-info" colspan="2">地域信息</td>
+                        <td colspan="3">
+                            <div class="right-aligned-inputs">
+                                <select name="region" onchange="updateQuantities()">
+                                    <option value="north">北方地区</option>
+                                    <option value="south">南方地区</option>
+                                </select>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="customer-info">联系人</td>
+                        <td colspan="2"><input type="text" name="contact" placeholder="请输入联系人"></td>
+                        <td class="location-info" colspan="2">平层位置</td>
+                        <td colspan="3">
+                            <div class="right-aligned-inputs">
+                                <select name="position" onchange="updateQuantities()">
+                                    <option value="middle">中户</option>
+                                    <option value="edge">边户</option>
+                                    <option value="middle_top">中户顶楼</option>
+                                    <option value="edge_top">边户顶楼</option>
+                                </select>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="customer-info">电话</td>
+                        <td colspan="2"><input type="text" name="phone" placeholder="请输入联系电话"></td>
+                        <td class="location-info" colspan="2">建筑面积</td>
+                        <td colspan="3">
+                            <div class="right-aligned-inputs">
+                                <div class="area-input-container">
+                                    <input 
+                                        type="number" 
+                                        name="area" 
+                                        value="161.00" 
+                                        min="1" 
+                                        max="300" 
+                                        step="0.01" 
+                                        class="area-input"
+                                        oninput="validateArea(this)"
+                                        onchange="formatArea(this); updateQuantities()"
+                                    >㎡
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th rowspan="2" class="col-system-type">系统类型</th>
+                        <th rowspan="2" class="col-professional-type">专业类型</th>
+                        <th class="manual-selection col-product-series">手动选填项</th>
+                        <th rowspan="2" class="col-unit">单位</th>
+                        <th rowspan="2" class="col-quantity">工程量</th>
+                        <th colspan="2">市场指导价</th>
+                        <th rowspan="2" class="col-remarks">备注</th>
+                    </tr>
+                    <tr>
+                        <th class="col-product-series">产品系列</th>
+                        <th class="col-price">市场指导单价（元）</th>
+                        <th class="col-total">市场指导总价（元）</th>
+                    </tr>
+                    
+                    <!-- 门窗系统 -->
+                    <tr>
+                        <td rowspan="3" class="section-header">门窗系统</td>
+                        <td>木窗</td>
+                        <td class="product-series">93U+铝包木欧标窗（松木）</td>
+                        <td>m²</td>
+                        <td><input type="number" name="wooden_window_qty" value="32.20" step="0.01" readonly></td>
+                        <td><input type="number" name="wooden_window_price" value="5879" readonly></td>
+                        <td><input type="number" name="wooden_window_total" value="189304" readonly></td>
+                        <td>供货+施工</td>
+                    </tr>
+                    <tr>
+                        <td>纱窗</td>
+                        <td class="product-series">纱窗MG-01/MG-02</td>
+                        <td>m²</td>
+                        <td><input type="number" name="screen_qty" value="11" readonly></td>
+                        <td><input type="number" name="screen_price" value="699" readonly></td>
+                        <td><input type="number" name="screen_total" value="7689" readonly></td>
+                        <td>供货+施工</td>
+                    </tr>
+                    <tr>
+                        <td>户门</td>
+                        <td class="product-series">子母门（外饰面外3mm铝板、内木饰面）</td>
+                        <td>m²</td>
+                        <td><input type="number" name="door_qty" value="2.64" step="0.01" readonly></td>
+                        <td><input type="number" name="door_price" value="27999" readonly></td>
+                        <td><input type="number" name="door_total" value="73917" readonly></td>
+                        <td>供货+施工</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td colspan="6" align="center">门窗系统小计</td>
+                        <td><input type="number" name="door_system_total" value="270910" readonly></td>
+                        <td>元</td>
+                    </tr>
+                    
+                    <!-- 保温系统 -->
+                    <tr>
+                        <td class="section-header">保温系统</td>
+                        <td>外墙线内保温</td>
+                        <td class="product-series">石线石保温砂浆-30mm</td>
+                        <td>m²</td>
+                        <td><input type="number" name="insulation_qty" value="80.50" step="0.01" readonly></td>
+                        <td><input type="number" name="insulation_price" value="459" readonly></td>
+                        <td><input type="number" name="insulation_total" value="36950" readonly></td>
+                        <td>供货+施工</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td colspan="6" align="center">保温系统小计</td>
+                        <td><input type="number" name="insulation_system_total" value="36950" readonly></td>
+                        <td>元</td>
+                    </tr>
+                    
+                    <!-- 密闭系统 -->
+                    <tr>
+                        <td rowspan="2" class="section-header">密闭系统</td>
+                        <td>门窗气密</td>
+                        <td class="product-series">门窗周边气密</td>
+                        <td>m²</td>
+                        <td><input type="number" name="door_seal_qty" value="32.20" step="0.01" readonly></td>
+                        <td><input type="number" name="door_seal_price" value="169" readonly></td>
+                        <td><input type="number" name="door_seal_total" value="5442" readonly></td>
+                        <td>材料+施工</td>
+                    </tr>
+                    <tr>
+                        <td>穿墙管洞气密</td>
+                        <td class="product-series">穿墙管道气密</td>
+                        <td>建面</td>
+                        <td><input type="number" name="wall_seal_qty" value="161.00" step="0.01" readonly></td>
+                        <td><input type="number" name="wall_seal_price" value="69" readonly></td>
+                        <td><input type="number" name="wall_seal_total" value="11109" readonly></td>
+                        <td>材料+施工</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td colspan="6" align="center">密闭系统小计</td>
+                        <td><input type="number" name="seal_system_total" value="16551" readonly></td>
+                        <td>元</td>
+                    </tr>
+                    
+                    <!-- 环控系统 -->
+                    <tr>
+                        <td rowspan="3" class="section-header">环控系统</td>
+                        <td>环境一体机</td>
+                        <td class="product-series" id="env_machine_type">环境一体机设备（52低温型）</td>
+                        <td>套</td>
+                        <td><input type="number" name="env_machine_qty" value="2.00" step="0.01" readonly></td>
+                        <td><input type="number" name="env_machine_price" value="105999" readonly></td>
+                        <td><input type="number" name="env_machine_total" value="211998" readonly></td>
+                        <td>设备+风管+施工及辅助</td>
+                    </tr>
+                    <tr>
+                        <td>开孔加固</td>
+                        <td class="product-series">开孔加固施工</td>
+                        <td>建面</td>
+                        <td><input type="number" name="hole_qty" value="161.00" step="0.01" readonly></td>
+                        <td><input type="number" name="hole_price" value="280" readonly></td>
+                        <td><input type="number" name="hole_total" value="45080" readonly></td>
+                        <td>施工</td>
+                    </tr>
+                    <tr>
+                        <td>厨房补风</td>
+                        <td class="product-series">厨房机械补风</td>
+                        <td>套</td>
+                        <td><input type="number" name="kitchen_vent_qty" value="1.00" step="0.01" readonly></td>
+                        <td><input type="number" name="kitchen_vent_price" value="2899" readonly></td>
+                        <td><input type="number" name="kitchen_vent_total" value="2899" readonly></td>
+                        <td>材料+施工</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td colspan="6" align="center">环控系统小计</td>
+                        <td><input type="number" name="env_system_total" value="259977" readonly></td>
+                        <td>元</td>
+                    </tr>
+                    
+                    <!-- 监测系统 -->
+                    <tr>
+                        <td class="section-header">监测系统</td>
+                        <td>温/湿度监测器</td>
+                        <td class="product-series">温/湿度检测器</td>
+                        <td>台</td>
+                        <td><input type="number" name="monitor_qty" value="8.00" step="0.01" readonly></td>
+                        <td><input type="number" name="monitor_price" value="2199" readonly></td>
+                        <td><input type="number" name="monitor_total" value="17592" readonly></td>
+                        <td>材料+施工</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td colspan="6" align="center">监测系统小计</td>
+                        <td><input type="number" name="monitor_system_total" value="17592" readonly></td>
+                        <td>元</td>
+                    </tr>
+                    
+                    <!-- 总计 -->
+                    <tr class="total-row">
+                        <td colspan="6" align="center">项目合计（元）</td>
+                        <td><input type="number" name="project_total" value="601980" readonly></td>
+                        <td>元</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td colspan="6" align="center">建筑平米单价（元/m²）</td>
+                        <td><input type="number" name="price_per_sqm" value="3739" readonly></td>
+                        <td>元</td>
+                    </tr>
+                </table>
+            </form>
+            
+            <div class="notes">
+                <p>备注：</p>
+                <p>1、适用于建筑面积≤300m²平层改造项目。</p>
+                <p>2、严寒地区续项目需做专项方案。</p>
+                <p>3、外扩阳台/封阳台需做专项方案。</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 登录验证
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorMessage = document.getElementById('error-message');
+            
+            console.log("尝试登录: 用户名=" + username + ", 密码=" + password);
+            
+            // 验证账号密码 - 已更新为新的账号密码
+            if (username === 'gaisuan@1110' && password === 'lvjian@1110') {
+                console.log("登录成功，正在跳转...");
+                // 登录成功，显示主内容
+                document.getElementById('login-page').style.display = 'none';
+                document.getElementById('main-content').style.display = 'block';
+                
+                // 初始化表单
+                formatArea(document.getElementsByName('area')[0]);
+                updateQuantities();
+            } else {
+                console.log("登录失败，显示错误信息");
+                // 登录失败，显示错误信息
+                errorMessage.style.display = 'block';
+                // 添加抖动效果
+                const loginContainer = document.querySelector('.login-container');
+                loginContainer.classList.add('shake');
+                setTimeout(() => {
+                    loginContainer.classList.remove('shake');
+                }, 500);
+            }
+        }
+        
+        // 登出功能
+        function logout() {
+            document.getElementById('main-content').style.display = 'none';
+            document.getElementById('login-page').style.display = 'flex';
+            document.getElementById('error-message').style.display = 'none';
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        }
+        
+        // 打印功能
+        function printForm() {
+            window.print();
+        }
+        
+        // 添加回车键登录功能
+        document.getElementById('password').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                login();
+            }
+        });
+        
+        // 环境一体机价格映射表
+        const envMachinePrices = {
+            "环境一体机设备（36低温型）": 100999,
+            "环境一体机设备（52低温型）": 105999,
+            "环境一体机设备（72低温型）": 115999,
+            "环境一体机设备（36除湿型）": 118999,
+            "环境一体机设备（52除湿型）": 123999,
+            "环境一体机设备（72除湿型）": 140999
+        };
+        
+        // 验证面积输入
+        function validateArea(input) {
+            if (input.value > 300) {
+                input.value = 300;
+                alert('建筑面积不能超过300㎡');
+            }
+        }
+        
+        // 格式化面积为两位小数
+        function formatArea(input) {
+            if (input.value) {
+                input.value = parseFloat(input.value).toFixed(2);
+            }
+        }
+        
+        // 获取环境一体机类型
+        function getEnvironmentMachineType(region, area) {
+            if (region === 'north') { // 北方地区
+                if (area <= 60) {
+                    return "环境一体机设备（36低温型）";
+                } else if (area <= 120) {
+                    return "环境一体机设备（52低温型）";
+                } else if (area <= 160) {
+                    return "环境一体机设备（72低温型）";
+                } else if (area <= 240) {
+                    return "环境一体机设备（52低温型）";
+                } else { // <= 300
+                    return "环境一体机设备（72低温型）";
+                }
+            } else { // 南方地区
+                if (area <= 60) {
+                    return "环境一体机设备（36除湿型）";
+                } else if (area <= 120) {
+                    return "环境一体机设备（52除湿型）";
+                } else if (area <= 160) {
+                    return "环境一体机设备（72除湿型）";
+                } else if (area <= 240) {
+                    return "环境一体机设备（52除湿型）";
+                } else { // <= 300
+                    return "环境一体机设备（72除湿型）";
+                }
+            }
+        }
+        
+        // 更新所有工程量
+        function updateQuantities() {
+            const area = parseFloat(document.getElementsByName('area')[0].value) || 0;
+            const position = document.getElementsByName('position')[0].value;
+            const region = document.getElementsByName('region')[0].value;
+            
+            // 1. 木窗工程量
+            let woodenWindowQty = 0;
+            if (position === 'edge' || position === 'edge_top') {
+                woodenWindowQty = area * 0.25;
+            } else { // middle or middle_top
+                woodenWindowQty = area * 0.2;
+            }
+            document.getElementsByName('wooden_window_qty')[0].value = woodenWindowQty.toFixed(2);
+            
+            // 2. 纱窗工程量 - 只保留整数位
+            const screenQty = Math.round(woodenWindowQty * 0.35);
+            document.getElementsByName('screen_qty')[0].value = screenQty;
+            
+            // 3. 户门工程量 (固定为2.64)
+            document.getElementsByName('door_qty')[0].value = (2.64).toFixed(2);
+            
+            // 4. 外墙内保温工程量
+            let insulationQty = 0;
+            if (position === 'edge') {
+                insulationQty = area * 0.6;
+            } else if (position === 'middle') {
+                insulationQty = area * 0.5;
+            } else if (position === 'edge_top') {
+                insulationQty = area * 1.6;
+            } else if (position === 'middle_top') {
+                insulationQty = area * 1.5;
+            }
+            document.getElementsByName('insulation_qty')[0].value = insulationQty.toFixed(2);
+            
+            // 5. 门窗气密工程量
+            document.getElementsByName('door_seal_qty')[0].value = woodenWindowQty.toFixed(2);
+            
+            // 6. 穿墙管洞气密工程量
+            document.getElementsByName('wall_seal_qty')[0].value = area.toFixed(2);
+            
+            // 7. 环境一体机工程量和类型
+            let envMachineQty = 1;
+            if (area > 160) {
+                envMachineQty = 2;
+            }
+            document.getElementsByName('env_machine_qty')[0].value = envMachineQty.toFixed(2);
+            
+            // 更新环境一体机类型和价格
+            const envMachineType = getEnvironmentMachineType(region, area);
+            document.getElementById('env_machine_type').textContent = envMachineType;
+            
+            // 更新环境一体机单价
+            const envMachinePrice = envMachinePrices[envMachineType];
+            document.getElementsByName('env_machine_price')[0].value = envMachinePrice;
+            
+            // 8. 开孔加固工程量
+            document.getElementsByName('hole_qty')[0].value = area.toFixed(2);
+            
+            // 9. 厨房补风工程量 (固定为1)
+            document.getElementsByName('kitchen_vent_qty')[0].value = (1).toFixed(2);
+            
+            // 10. 温/湿度监测器工程量
+            let monitorQty = 10; // 默认为最大值
+            if (area <= 60) {
+                monitorQty = 3;
+            } else if (area <= 120) {
+                monitorQty = 4;
+            } else if (area <= 160) {
+                monitorQty = 5;
+            } else if (area <= 240) {
+                monitorQty = 8;
+            }
+            document.getElementsByName('monitor_qty')[0].value = monitorQty.toFixed(2);
+            
+            // 更新所有总价
+            calculateTotal();
+        }
+        
+        // 计算单项总价
+        function calculateItemTotal(itemName) {
+            const qty = parseFloat(document.getElementsByName(itemName + '_qty')[0].value) || 0;
+            const price = parseFloat(document.getElementsByName(itemName + '_price')[0].value) || 0;
+            const total = qty * price;
+            document.getElementsByName(itemName + '_total')[0].value = Math.round(total);
+            return total;
+        }
+        
+        function calculateTotal() {
+            // 计算各项总价
+            const woodenWindowTotal = calculateItemTotal('wooden_window');
+            const screenTotal = calculateItemTotal('screen');
+            const doorTotal = calculateItemTotal('door');
+            const insulationTotal = calculateItemTotal('insulation');
+            const doorSealTotal = calculateItemTotal('door_seal');
+            const wallSealTotal = calculateItemTotal('wall_seal');
+            const envMachineTotal = calculateItemTotal('env_machine');
+            const holeTotal = calculateItemTotal('hole');
+            const kitchenVentTotal = calculateItemTotal('kitchen_vent');
+            const monitorTotal = calculateItemTotal('monitor');
+            
+            // 计算系统小计
+            const doorSystemTotal = woodenWindowTotal + screenTotal + doorTotal;
+            const insulationSystemTotal = insulationTotal;
+            const sealSystemTotal = doorSealTotal + wallSealTotal;
+            const envSystemTotal = envMachineTotal + holeTotal + kitchenVentTotal;
+            const monitorSystemTotal = monitorTotal;
+            
+            // 更新系统小计
+            document.getElementsByName('door_system_total')[0].value = Math.round(doorSystemTotal);
+            document.getElementsByName('insulation_system_total')[0].value = Math.round(insulationSystemTotal);
+            document.getElementsByName('seal_system_total')[0].value = Math.round(sealSystemTotal);
+            document.getElementsByName('env_system_total')[0].value = Math.round(envSystemTotal);
+            document.getElementsByName('monitor_system_total')[0].value = Math.round(monitorSystemTotal);
+            
+            // 计算项目总计
+            const projectTotal = doorSystemTotal + insulationSystemTotal + sealSystemTotal + envSystemTotal + monitorSystemTotal;
+            document.getElementsByName('project_total')[0].value = Math.round(projectTotal);
+            
+            // 计算平米单价
+            const area = parseFloat(document.getElementsByName('area')[0].value) || 1;
+            const pricePerSqm = projectTotal / area;
+            document.getElementsByName('price_per_sqm')[0].value = Math.round(pricePerSqm);
+            
+            return projectTotal;
+        }
+    </script>
+</body>
+</html>
